@@ -10,17 +10,15 @@ def get_user_by_user_id(user_id: int, db: Session):
     return user
 
 
-def get_user_by_id_password(user_name: str, password: str, db: Session):
-    stmt = select(User).where(
-        and_(User.user_name == user_name, User.password == password)
-    )
+def get_user_by_id_password(email: str, password: str, db: Session):
+    stmt = select(User).where(and_(User.email == email, User.password == password))
     result = db.execute(stmt)
     user = result.scalar()
     return user
 
 
-def create_user(user_name: str, password: str, db: Session):
-    user = User(user_name=user_name, password=password)
+def create_user(email: str, password: str, db: Session):
+    user = User(email=email, password=password)
     db.add(user)
     db.commit()
     db.refresh(user)

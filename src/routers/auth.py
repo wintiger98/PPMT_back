@@ -14,12 +14,12 @@ from ..schemas.user_schemas import UserBase, UserOutput
 
 
 router = APIRouter(
-    prefix="/users",
-    tags=["users"],
+    prefix="/auth",
+    tags=["auth"],
 )
 
 
-@router.post("", response_model=UserOutput)
+@router.post("/signup", response_model=UserOutput)
 async def sign_up(user_data: UserBase, db: Session = Depends(get_db)):
     """회원가입
 
@@ -37,14 +37,16 @@ async def sign_up(user_data: UserBase, db: Session = Depends(get_db)):
 
         _type_: UserOutput
     """
-    print(user_data.model_dump())
-    user = create_user(
-        user_name=user_data.user_name, password=user_data.password, db=db
+    user = get_user_by_id_password(
+        email=user_data.email, password=user_data.password, db=db
     )
+    if user:
+        raise HTTPException(status_code=400)
+    user = create_user(email=user_data.email, password=user_data.password, db=db)
     return user
 
 
-@router.post("/login", response_model=UserOutput)
+@router.post("/login")
 async def login(user_data: UserBase, db: Session = Depends(get_db)):
     """로그인
 
@@ -62,11 +64,15 @@ async def login(user_data: UserBase, db: Session = Depends(get_db)):
 
         _type_: UserOutput
     """
-    user = get_user_by_id_password(id=user_data.id, password=user_data.password, db=db)
+    user = get_user_by_id_password(
+        email=user_data.email, password=user_data.password, db=db
+    )
+    if not user:
+        raise HTTPException(status_code=400)
     return user
 
 
-@router.get("/{user_id}", response_model=UserOutput)
+@router.get("/users/{user_id}", response_model=UserOutput)
 async def get_user(user_id: int, db: Session = Depends(get_db)):
     """## Args
 
@@ -87,7 +93,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-@router.put("/{user_id}", response_model=dict)
+@router.put("/users/{user_id}", response_model=dict)
 async def change_user(user_id: int, password: str, db: Session = Depends(get_db)):
     """## change user info
 
@@ -109,7 +115,7 @@ async def change_user(user_id: int, password: str, db: Session = Depends(get_db)
     return {"success": True}
 
 
-@router.delete("/{user_id}", response_model=dict)
+@router.delete("/users/{user_id}", response_model=dict)
 async def erase_user(user_id: int, db: Session = Depends(get_db)):
     """## delete user info
 

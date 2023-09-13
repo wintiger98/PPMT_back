@@ -4,14 +4,16 @@ from pydantic import BaseModel
 
 
 class ProjectBase(BaseModel):
-    created_at: datetime
-    updated_at: datetime
-    start_at: datetime
-    end_at: datetime
-    tech: list[str]
+    start_at: Optional[datetime]
+    end_at: Optional[datetime]
+    tech: Optional[list[str]]
+    title: Optional[str]
+    categories: Optional[list[str]]
 
 
 class ProjectOutput(ProjectBase):
+    created_at: datetime
+    updated_at: datetime
     pass
 
 

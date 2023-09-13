@@ -10,7 +10,7 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
-    user_name = Column(TEXT, nullable=False)
+    email = Column(TEXT, nullable=False)
     password = Column(TEXT, nullable=False)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
 
@@ -21,11 +21,13 @@ class Project(Base):
     __tablename__ = "project"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
+    title = Column(TEXT)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
     updated_at = Column(DateTime, default=datetime.now(), nullable=False)
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     tech = Column(TEXT)
+    categories = Column(TEXT)
 
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="projects")

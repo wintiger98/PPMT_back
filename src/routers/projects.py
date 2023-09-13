@@ -10,6 +10,7 @@ from ..crud.crud_project import (
     get_project_by_user_id,
     get_project,
     update_project,
+    change_project_fit_with_schema,
 )
 
 
@@ -35,10 +36,12 @@ async def make_project(data: ProjectInput, db: Session = Depends(get_db)):
     | _type_ | ProjectOutput |
     """
     project = create_project(data=data.model_dump(), db=db)
+    project = change_project_fit_with_schema(project=project)
+
     return project
 
 
-@router.get("/{user_id}", response_model=List[ProjectOutput])
+@router.get("", response_model=List[ProjectOutput])
 async def get_projects(user_id: int, db: Session = Depends(get_db)):
     """다수의 project 조회
 
@@ -75,6 +78,7 @@ async def get_one_project(project_id: int, db: Session = Depends(get_db)):
     project = get_project(project_id=project_id, db=db)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    project = change_project_fit_with_schema(project=project)
     return project
 
 
@@ -98,6 +102,7 @@ async def change_project(
     project = update_project(project_id=project_id, data=data, db=db)
     if not project:
         raise HTTPException(status_code=400, detail="Update failed")
+    project = change_project_fit_with_schema(project=project)
     return project
 
 
