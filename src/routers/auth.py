@@ -1,22 +1,38 @@
 from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi.security import OAuth2PasswordRequestForm
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
-from ..crud.crud_user import (
+from ..crud.crud_auth import (
     create_user,
     delete_user,
+    get_access_token,
+    get_current_user_email,
+    get_user_by_email,
     get_user_by_id_password,
     get_user_by_user_id,
     update_user,
 )
-from ..schemas.user_schemas import UserBase, UserOutput
-
+from ..schemas.auth_schemas import UserBase, UserOutput, Token, TokenData
 
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
 )
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
+    user = get_user_by_id_password(
+        email=form_data.username, password=form_data.password, db=db
+    )
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token = get_access_token(data={"email": user.email})
+    return access_token
 
 
 @router.post("/signup", response_model=UserOutput)
@@ -46,7 +62,7 @@ async def sign_up(user_data: UserBase, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/login")
+@router.post("/login", response_model=UserOutput)
 async def login(user_data: UserBase, db: Session = Depends(get_db)):
     """로그인
 
@@ -72,28 +88,17 @@ async def login(user_data: UserBase, db: Session = Depends(get_db)):
     return user
 
 
-@router.get("/users/{user_id}", response_model=UserOutput)
-async def get_user(user_id: int, db: Session = Depends(get_db)):
-    """## Args
-
-    | Parameter | Type | Description |
-    | --------- | ---- | ----------- |
-    | user_id | int |  |
-
-
-    ## Returns
-
-    | Type | Description |
-    | ---- | ----------- |
-    | UserOutput |  |
-    """
-    user = get_user_by_user_id(user_id=user_id, db=db)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+@router.get("/me", response_model=UserOutput)
+async def read_users_me(
+    email: str = Depends(get_current_user_email), db: Session = Depends(get_db)
+):
+    user = get_user_by_email(email=email, db=db)
+    if not user:
+        raise HTTPException(status_code=400, detail="Not found User")
     return user
 
 
-@router.put("/users/{user_id}", response_model=dict)
+@router.put("/users", response_model=dict)
 async def change_user(user_id: int, password: str, db: Session = Depends(get_db)):
     """## change user info
 

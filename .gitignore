@@ -4,6 +4,7 @@
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
+venv11/
 *.py[cod]
 *$py.class
 

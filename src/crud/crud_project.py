@@ -34,11 +34,16 @@ def get_project(project_id: int, db: Session) -> Project:
     return project
 
 
-def create_project(data: dict, db: Session) -> Project:
+def data_preprocess(data: dict):
     if data.get("tech"):
         data["tech"] = list2string(data["tech"])
     if data.get("categories"):
         data["categories"] = list2string(data["categories"])
+    return data
+
+
+def create_project(data: dict, db: Session) -> Project:
+    data = data_preprocess(data=data)
     project = Project(**data)
     db.add(project)
     db.commit()
@@ -47,11 +52,14 @@ def create_project(data: dict, db: Session) -> Project:
 
 
 def update_project(project_id: int, data: dict, db: Session) -> Project:
+    data = data_preprocess(data=data)
     stmt = select(Project).where(Project.id == project_id)
     result = db.execute(stmt)
     project = result.scalar()
 
     for key, value in data.items():
+        if key == "user_id" or key == "id":
+            continue
         setattr(project, key, value)
 
     db.commit()
@@ -64,4 +72,4 @@ def delete_project(project_id: int, db: Session):
     stmt = delete(Project).where(Project.id == project_id)
     db.execute(stmt)
     db.commit()
-    return None
+    return True

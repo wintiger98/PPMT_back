@@ -13,6 +13,8 @@ from ..crud.crud_project import (
     change_project_fit_with_schema,
 )
 
+from ..crud.crud_auth import get_current_user_email, get_user_by_email
+
 
 router = APIRouter(
     prefix="/projects",
@@ -21,7 +23,11 @@ router = APIRouter(
 
 
 @router.post("", response_model=ProjectOutput)
-async def make_project(data: ProjectInput, db: Session = Depends(get_db)):
+async def make_project(
+    data: ProjectInput,
+    email: str = Depends(get_current_user_email),
+    db: Session = Depends(get_db),
+):
     """## Args
 
     | Parameter | Type | Description |
@@ -35,14 +41,21 @@ async def make_project(data: ProjectInput, db: Session = Depends(get_db)):
     | ---- | ----------- |
     | _type_ | ProjectOutput |
     """
-    project = create_project(data=data.model_dump(), db=db)
+    user = get_user_by_email(email=email, db=db)
+    if not user:
+        raise HTTPException(status_code=400, detail="Not User found")
+    data = data.model_dump()
+    data["user_id"] = user.id
+    project = create_project(data=data, db=db)
     project = change_project_fit_with_schema(project=project)
 
     return project
 
 
 @router.get("", response_model=List[ProjectOutput])
-async def get_projects(user_id: int, db: Session = Depends(get_db)):
+async def get_projects(
+    email: str = Depends(get_current_user_email), db: Session = Depends(get_db)
+):
     """다수의 project 조회
 
     Args:
@@ -55,7 +68,10 @@ async def get_projects(user_id: int, db: Session = Depends(get_db)):
     Returns:
         List: List[ProjectOutput]
     """
-    projects = get_project_by_user_id(user_id=user_id, db=db)
+    user = get_user_by_email(email=email, db=db)
+    if not user:
+        raise HTTPException(status_code=400, detail="Not User found")
+    projects = get_project_by_user_id(user_id=user.id, db=db)
     if projects is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return projects
@@ -99,7 +115,7 @@ async def change_project(
     Returns:
         _type_: ProjectOutput
     """
-    project = update_project(project_id=project_id, data=data, db=db)
+    project = update_project(project_id=project_id, data=data.model_dump(), db=db)
     if not project:
         raise HTTPException(status_code=400, detail="Update failed")
     project = change_project_fit_with_schema(project=project)
