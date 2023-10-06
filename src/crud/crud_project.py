@@ -1,6 +1,6 @@
 from typing import List
 from ..models import Project
-from sqlalchemy import select, delete, update, and_
+from sqlalchemy import desc, select, delete, update, and_
 from sqlalchemy.orm import Session
 
 
@@ -21,9 +21,15 @@ def change_project_fit_with_schema(project: Project):
 
 
 def get_project_by_user_id(user_id: int, db: Session) -> List[Project]:
-    stmt = select(Project).where(Project.user_id == user_id)
+    stmt = (
+        select(Project)
+        .where(Project.user_id == user_id)
+        .order_by(desc(Project.updated_at))
+    )
     result = db.execute(stmt)
     projects = result.scalars().all()
+    for project in projects:
+        project = change_project_fit_with_schema(project)
     return projects
 
 

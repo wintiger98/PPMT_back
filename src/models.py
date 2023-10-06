@@ -4,6 +4,7 @@ from .database import Base
 from .enums.state import TodoState
 from sqlalchemy import Column, Integer, TEXT, DateTime, ForeignKey, Enum as EnumColumn
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 
 class User(Base):
@@ -23,11 +24,14 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True, unique=True)
     title = Column(TEXT)
     created_at = Column(DateTime, default=datetime.now(), nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(), nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.now(), nullable=False, onupdate=func.now()
+    )
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     tech = Column(TEXT)
     categories = Column(TEXT)
+    description = Column(TEXT)
 
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="projects")

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Form
 from ..database import get_db
-from ..schemas.project_schemas import ProjectInput, ProjectOutput
+from ..schemas.project_schemas import ProjectInput, ProjectOutput, ProjectOneOutput
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -77,7 +77,7 @@ async def get_projects(
     return projects
 
 
-@router.get("/{project_id}", response_model=ProjectOutput)
+@router.get("/{project_id}", response_model=ProjectOneOutput)
 async def get_one_project(project_id: int, db: Session = Depends(get_db)):
     """project_id로 단일 project 조회
 
