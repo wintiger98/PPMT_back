@@ -1,5 +1,5 @@
 from typing import List
-from ..models import Project
+from ..models import Project, ProjectContent
 from sqlalchemy import desc, select, delete, update, and_
 from sqlalchemy.orm import Session
 
@@ -56,6 +56,15 @@ def create_project(data: dict, db: Session) -> Project:
     db.refresh(project)
     return project
 
+def update_project_contents(project, project_contents):
+    contents = []
+    for content in project_contents:
+        tmp_content = ProjectContent()
+        for key, value in content.items():
+            setattr(tmp_content,key,value)
+        contents.append(tmp_content)
+    project.project_contents = contents
+    return project
 
 def update_project(project_id: int, data: dict, db: Session) -> Project:
     data = data_preprocess(data=data)
@@ -65,6 +74,9 @@ def update_project(project_id: int, data: dict, db: Session) -> Project:
 
     for key, value in data.items():
         if key == "user_id" or key == "id":
+            continue
+        if key == "project_contents":
+            project = update_project_contents(project=project, project_contents=value)
             continue
         setattr(project, key, value)
 

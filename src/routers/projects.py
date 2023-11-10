@@ -1,6 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, Form
 from ..database import get_db
-from ..schemas.project_schemas import ProjectInput, ProjectOutput, ProjectOneOutput
+from ..schemas.project_schemas import (
+    ProjectContentInput,
+    ProjectContentOutput,
+    ProjectInput,
+    ProjectOutput,
+    ProjectOneOutput,
+)
 from sqlalchemy.orm import Session
 from typing import List
 

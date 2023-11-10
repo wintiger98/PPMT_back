@@ -1,17 +1,23 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
+from fastapi import UploadFile
 
 
 class ProjectContentBase(BaseModel):
-    order: int
+    # order: Optional[int]
     title: str
-    imageUrl: Optional[str]
+    link_url: Optional[str]
     contents: Optional[str]
 
 
 class ProjectContentOutput(ProjectContentBase):
     id: int
+    image_url: Optional[str]
+
+
+class ProjectContentInput(ProjectContentBase):
+    image: Optional[str]
 
 
 class ProjectBase(BaseModel):
@@ -37,4 +43,4 @@ class ProjectOneOutput(ProjectBase):
 
 
 class ProjectInput(ProjectBase):
-    pass
+    project_contents: Optional[list[ProjectContentInput]]

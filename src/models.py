@@ -2,7 +2,15 @@ from datetime import datetime
 
 from .database import Base
 from .enums.state import TodoState
-from sqlalchemy import Column, Integer, TEXT, DateTime, ForeignKey, Enum as EnumColumn
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Integer,
+    TEXT,
+    DateTime,
+    ForeignKey,
+    Enum as EnumColumn,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -36,7 +44,10 @@ class Project(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="projects")
 
-    project_contents = relationship("ProjectContent", back_populates="project")
+    project_contents = relationship(
+        "ProjectContent",
+        back_populates="project",
+    )
     project_todos = relationship("ProjectTodo", back_populates="project")
     project_design_setting = relationship(
         "ProjectDesignSetting", back_populates="project"
@@ -49,8 +60,11 @@ class ProjectContent(Base):
     id = Column(Integer, primary_key=True, index=True, unique=True)
     order = Column(Integer)
     title = Column(TEXT)
-    imageUrl = Column(TEXT)
+    image_url = Column(TEXT)
+    link_url = Column(TEXT)
     contents = Column(TEXT)
+
+    is_auto = Column(Boolean, default=False)
 
     project_id = Column(Integer, ForeignKey("project.id"))
     project = relationship("Project", back_populates="project_contents")
