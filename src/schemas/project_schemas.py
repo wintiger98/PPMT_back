@@ -17,7 +17,8 @@ class ProjectContentOutput(ProjectContentBase):
 
 
 class ProjectContentInput(ProjectContentBase):
-    image: Optional[str]
+    image: Optional[str] = ""
+    image_url: Optional[str] = ""
 
 
 class ProjectBase(BaseModel):
